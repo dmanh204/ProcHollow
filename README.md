@@ -2,13 +2,14 @@
 Repository này thực hiện xây dựng một chương trình tiến hành kỹ thuật Process Hollowing trên tiến trình svchost.exe.
 # Một số kiến thức
 Tham khảo từ https://hackmd.io/@Wh04m1/Sk4ZLgGc6
-Khi tiến hành tạo một process, Kernel mở file thực thi và kiểm tra -> File PE hợp lệ thì kernel tạo 1 kernel process object và 1 kernel thread object đại diện cho process và thread mới -> kernwl ánh xạ image và NTDLL.DLL vào không gian bộ nhớ của tiến trình
+
+Khi tiến hành tạo một process, Kernel mở file thực thi và kiểm tra -> File PE hợp lệ thì kernel tạo 1 kernel process object và 1 kernel thread object đại diện cho process và thread mới -> kernel ánh xạ image và NTDLL.DLL vào không gian bộ nhớ của tiến trình
 -> thông báo cho tiến trình quản lý csrss.exe về process mới được tạo.
 
 Tới đây, một tiến trình được kernel coi là khởi tạo thành công. Tiếp theo là quá trình khởi tạo context bên trong process.
 Đối tượng quản lý process ở không gian người dùng là Process Environment Block và Thread Environment Block được khởi tạo -> Khởi tạo các thuộc tính khác, như heap, thread pool -> Tải các DLL cần thiết -> Khởi chạy tại entry point.
 
-Nếu sử dụng API CreateProcess() với cờ CREATE_SUSPENDED, process mới được tạo sẽ ở trạng thái ngưng và chỉ có thể tiếp tục bằng API ResumeThread(). Khi được tạo ở trạng thái này, process sẽ được khởi tại đến bước tạo PEB và TEB, còn các quá trình
+Nếu sử dụng API CreateProcess() với cờ CREATE_SUSPENDED, process mới được tạo sẽ ở trạng thái ngưng và chỉ có thể tiếp tục bằng API ResumeThread(). Khi được tạo ở trạng thái này, process sẽ được khởi tạo đến bước tạo PEB và TEB, còn các quá trình
 tạo heap, tải DLL, chạy tại entry point vẫn chưa được thực hiện. Kỹ thuật Process Hollowing sẽ lợi dụng điều này: tại một process bị suspended, xóa bỏ image gốc được nạp ban đầu, thay thế bằng image độc hại, thiết lập các context của image cho phù hợp và khiến process
 chạy image độc hại thay vì chương trình ban đầu.
 
