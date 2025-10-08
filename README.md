@@ -93,7 +93,7 @@ Sau đó, cấp phát vùng nhớ tại chính vị trí đã hollowing, với k
 PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)((ULONG_PTR)buffer + ((PIMAGE_DOS_HEADER)buffer)->e_lfanew);
 LPVOID imageBase = VirtualAllocEx(pi.hProcess, peb.lpImageBaseAddress, ntHeader->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 ```
-Ta sẽ copy header và các section vào vùng nhớ này. Theo Copilot giải thích, một số chương trình như SVCHOST.EXE có cơ chế kiểm tra nội bộ PEB->ImageBaseAddress nên cần phải cập nhật lại header của image giá trị ImageBase mới giống với PEB
+Ta sẽ copy header và các section vào vùng nhớ này. Theo Copilot giải thích, một số chương trình như SVCHOST.EXE có cơ chế kiểm tra nội bộ PEB->ImageBaseAddress so với ImageBase trong header. Cần phải cập nhật lại header của image giá trị ImageBase mới giống với PEB
 của tiến trình SVCHOST.EXE rồi mới copy header vào vùng nhớ.
 ```C
 ULONG_PTR delta = (ULONG_PTR)imageBase - ntHeader->OptionalHeader.ImageBase;
@@ -115,7 +115,7 @@ while (uValueB)
 }
 ```
 Trong quá trình sao chép image này, chúng ra sẽ tiến hành cả xử lý Relocation. Lưu ý, khác với Reflective DLL injection, nơi mà ReflectiveLoader thực thi là trong nội bộ tiến trình nạn nhân nên nó có thể truy cập trực tiếp vùng nhớ Relocation qua con trỏ.
-Ở đây, injector đóng vai trò là một tiến trình bên ngoài tiến trình SVCHOST.EXE nên không thể truy cập trực tiếp vùng nhớ đã ghi vào trong SVCHOST.EXE. Cần phải dùng ReadProcessMemory đọc Reloc Table, sau đóc duyệt qua Reloc Table.
+Ở đây, injector đóng vai trò là một tiến trình bên ngoài tiến trình SVCHOST.EXE nên không thể truy cập trực tiếp vùng nhớ đã ghi vào trong SVCHOST.EXE. Cần phải dùng ReadProcessMemory đọc Reloc Table, sau đó duyệt qua Reloc Table.
 Với mỗi entry, sử dụng ReadProcessMemory để lấy ra giá trị Reloc, cộng delta ImageBase và ghi lại qua WriteProcessMemory.
 ```C
 PIMAGE_DATA_DIRECTORY RelocDir = &(ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC]);
