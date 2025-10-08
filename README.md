@@ -25,7 +25,7 @@ pfnNtUnmapViewOfSection pNtUnmapViewOfSection = (pfnNtUnmapViewOfSection)GetProc
 pfnNtQueryInformationProcess pNtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNTDLL, "NtQueryInformationProcess");
 ```
 NtQueryInformationProcess là API dùng để lấy thông tin của Process, NtUnmapViewOfSection là API dùng để unmap vùng nhớ đã được cấp phát. Hai Native API này của Windows, được định nghĩa trong thư viện NTDLL.DLL
-nhưng chưa được khai báo sẵn trong Windows SDL nên cần khai báo con trỏ hàm cho 2 API này để gán vào địa chỉ hàm đọc từ NTDLL ra.
+nhưng chưa được khai báo sẵn trong Windows SDK nên cần khai báo con trỏ hàm cho 2 API này để gán vào địa chỉ hàm đọc từ NTDLL ra.
 
 Tiếp theo là định nghĩa một số cấu trúc struct chưa được định nghĩa đầy đủ là PEB_LDR_DATA, PEB_FREE_BLOCK, _UNICODE_STR, PEB, IMAGE_RELOC
 ## 1. Tạo mới process
